@@ -1,0 +1,15 @@
+# 仓库根部的兜底规则，各子项目自己的 .gitignore 仍然生效。
+node_modules/
+dist/
+release/
+.vite-cache/
+coverage/
+
+# 环境变量：只提交 .env.example
+.env
+.env.*
+!.env.example
+
+*.log
+npm-debug.log*
+.DS_Store
