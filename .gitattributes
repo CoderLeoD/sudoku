@@ -1,0 +1,5 @@
+# Shell 脚本必须是 LF 结尾, 否则在 macOS / Linux 上会报 bad interpreter。
+# Windows 上全局 core.autocrlf=true 也不会影响这些文件。
+*.sh text eol=lf
+.githooks/pre-commit text eol=lf
+.githooks/blocked-email-patterns text eol=lf

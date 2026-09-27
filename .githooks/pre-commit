@@ -1,0 +1,59 @@
+#!/bin/sh
+# 提交前校验身份, 阻止用公司邮箱提交到本仓库.
+#
+# 本钩子随仓库一起版本控制, 通过 core.hooksPath 启用,
+# 由 scripts/setup-git.sh 完成配置 (clone 之后执行一次).
+
+root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+patterns="$root/.githooks/blocked-email-patterns"
+
+[ -f "$patterns" ] || exit 0
+
+# "Name <mail@example.com> 1700000000 +0800" -> mail@example.com
+email_of() {
+  git var "$1" 2>/dev/null | sed -n 's/.*<\(.*\)>.*/\1/p'
+}
+
+author=$(email_of GIT_AUTHOR_IDENT)
+committer=$(email_of GIT_COMMITTER_IDENT)
+
+hit_email=""
+hit_role=""
+hit_pattern=""
+
+for role in author committer; do
+  [ -n "$hit_email" ] && break
+  if [ "$role" = author ]; then
+    email="$author"
+  else
+    email="$committer"
+  fi
+  [ -n "$email" ] || continue
+
+  while IFS= read -r pattern; do
+    case "$pattern" in
+      '' | \#*) continue ;;
+    esac
+    if printf '%s\n' "$email" | grep -qiE -- "$pattern"; then
+      hit_email="$email"
+      hit_role="$role"
+      hit_pattern="$pattern"
+      break
+    fi
+  done < "$patterns"
+done
+
+if [ -n "$hit_email" ]; then
+  echo ""
+  echo "提交被拒绝: ${hit_role} 邮箱 <${hit_email}> 命中禁用规则 /${hit_pattern}/"
+  echo ""
+  echo "本仓库不接受公司邮箱的提交记录。执行下面这条命令配置本仓库身份："
+  echo ""
+  echo "    sh scripts/setup-git.sh"
+  echo ""
+  echo "规则定义在 .githooks/blocked-email-patterns"
+  echo ""
+  exit 1
+fi
+
+exit 0

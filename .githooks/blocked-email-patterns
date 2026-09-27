@@ -1,0 +1,7 @@
+# 禁止用于本仓库提交的邮箱规则, 每行一条 (扩展正则, 不区分大小写).
+# 以 # 开头的行和空行会被忽略.
+#
+# scripts/setup-git.sh 用它校验传入的邮箱,
+# .githooks/pre-commit 用它拦截提交.
+
+ctechm\.com$
